@@ -1,45 +1,60 @@
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+package harvestingFields;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        //•	private - print all private fields
+        //•	protected - print all protected fields
+        //•	public - print all public fields
+        //•	all - print ALL declared fields
+        //•	HARVEST - end the input
 
-    public static void main(String[] args) throws
-            NoSuchMethodException,
-            IllegalAccessException,
-            InvocationTargetException,
-            InstantiationException {
-        Class reflection = Reflection.class;
+        Class<RichSoilLand> richSoilLandClass = RichSoilLand.class;
+        List<Field> fields = Arrays.stream(richSoilLandClass.getDeclaredFields())
+                .collect(Collectors.toList());
 
-        List<Method> set = new ArrayList<Method>();
-        List<Method> get = new ArrayList<Method>();
+        String command = scanner.nextLine();
+        boolean isHarvest = false;
 
-        Method[] methods = reflection.getDeclaredMethods();
-        for (Method method : methods) {
-            if (method.getName().startsWith("get")) {
-                get.add(method);
-            } else if (method.getName().startsWith("set")) {
-                set.add(method);
+
+        while (!command.equals("HARVEST")) {
+            if ("private".equals(command)) {
+                fields.stream()
+                        .filter(field -> field.getModifiers() == Modifier.PRIVATE)
+                        .forEach(field ->{
+                                System.out.printf("%s %s %s%n"
+                                        ,Modifier.toString(field.getModifiers()),field.getType().getSimpleName(), field.getName());
+                        });
+            } else if ("protected".equals(command)) {
+                fields.stream()
+                        .filter(field -> field.getModifiers() == Modifier.PROTECTED)
+                        .forEach(field ->
+                                System.out.printf("%s %s %s%n"
+                                        , Modifier.toString(field.getModifiers()), field.getType().getSimpleName(), field.getName()));
+            } else if ("public".equals(command)) {
+                fields.stream()
+                        .filter(field -> field.getModifiers() == Modifier.PUBLIC)
+                        .forEach(field ->
+                                System.out.printf("%s %s %s%n"
+                                        , Modifier.toString(field.getModifiers()), field.getType().getSimpleName(), field.getName()));
+            } else if ("all".equals(command)) {
+                fields.forEach(field -> System.out.printf("%s %s %s%n"
+                        , Modifier.toString(field.getModifiers()), field.getType().getSimpleName(), field.getName()));
+
             }
+
+            command = scanner.nextLine();
+
         }
 
-        get.stream()
-                .sorted((a, b) -> a.getName().compareTo(b.getName()))
-                .forEach(getter ->
-                        System.out.printf("%s will return class %s%n",
-                                getter.getName(), getter.getReturnType().getSimpleName()));
-
-        set.stream()
-                .sorted((a, b) -> a.getName().compareTo(b.getName()))
-                .forEach(setter -> {
-                    System.out.printf("%s will set field of class ", setter.getName());
-                    Arrays.stream(setter.getParameterTypes()).forEach(
-                            type -> System.out.printf("%s%n", type.getSimpleName())
-                    );
-                }
-        );
 
     }
 }
-
-
